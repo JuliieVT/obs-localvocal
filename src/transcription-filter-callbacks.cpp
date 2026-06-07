@@ -314,14 +314,31 @@ void output_text(struct transcription_filter_data *gf, const DetectionResultWith
 			}
 		} else {
 			// non-buffered output - send the sentence to the selected source
-			obs_log(LOG_DEBUG, "-- text output to source %s -- %s",
-				output_source.c_str(), text.c_str());
-			send_caption_to_source(output_source, text, gf);
+			if (output_source == "none") {
+				// "Write to captions output" was selected as destination:
+				// send directly to the stream captions output
+				if (result.result == DETECTION_RESULT_SPEECH) {
+					obs_log(LOG_DEBUG,
+						"-- stream captions output (%s) -- %s",
+						translation_type == LOCAL_TRANSLATION
+							? "local translation"
+							: "default",
+						text.c_str());
+					send_caption_to_stream(result, text, gf);
+				}
+			} else {
+				obs_log(LOG_DEBUG, "-- text output to source %s -- %s",
+					output_source.c_str(), text.c_str());
+				send_caption_to_source(output_source, text, gf);
+			}
 		}
 
-		if (gf->caption_to_stream && translation_type == NO_TRANSLATION &&
-		    result.result == DETECTION_RESULT_SPEECH) {
-			// TODO: add support for partial transcriptions
+		const bool local_translation_handles_stream =
+    gf->translate && (gf->translation_output == "none");
+if (gf->caption_to_stream && translation_type == NO_TRANSLATION &&
+    !local_translation_handles_stream &&
+    result.result == DETECTION_RESULT_SPEECH) {
+	// TODO: add support for partial transcriptions
 			if (output_source == gf->text_source_name) {
 				obs_log(LOG_DEBUG, "-- stream captions output -- %s", text.c_str());
 				send_caption_to_stream(result, text, gf);
