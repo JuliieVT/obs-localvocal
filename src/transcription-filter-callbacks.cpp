@@ -332,7 +332,6 @@ void output_text(struct transcription_filter_data *gf, const DetectionResultWith
 				send_caption_to_source(output_source, text, gf);
 			}
 		}
-
 		const bool local_translation_handles_stream =
     gf->translate && (gf->translation_output == "none");
 if (gf->caption_to_stream && translation_type == NO_TRANSLATION &&
